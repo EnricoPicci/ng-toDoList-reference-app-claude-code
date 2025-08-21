@@ -1,0 +1,19 @@
+In the TodoDetailComponent class there is this method:
+```
+  deleteTodo(): void {
+    this.todo$.subscribe(todo => {
+      if (todo && !this.isNewTodo) {
+        this.todoService.deleteTodo(todo.id);
+        this.goBack();
+      }
+    }).unsubscribe();
+  }
+  ```
+
+In this method the todo$ Observable is subscribed to get the current selected to-do and delete it.
+The service must provide a method "deleteSelectedTodo" which deletes the selected to-do.
+In general, the service must know which is the selected to-do at any moment, if there is one selected to-do.
+Therefore remove all subscriptions to the todo$ Observable that are not in the `ngOnInit()` method.
+The view Components must subscribe only in their `ngOnInit()` methods and unsubscribe in their `ngOnDestroy()` methods.
+
+Change the Components to obey to these guidelines.

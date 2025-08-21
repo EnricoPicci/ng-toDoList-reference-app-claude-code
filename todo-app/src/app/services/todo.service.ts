@@ -90,4 +90,21 @@ export class TodoService {
   clearSelectedTodo(): void {
     this.selectedTodoSubject.next(null);
   }
+
+  deleteSelectedTodo(): void {
+    const selectedTodo = this.selectedTodoSubject.value;
+    if (selectedTodo) {
+      this.deleteTodo(selectedTodo.id);
+      this.clearSelectedTodo();
+    }
+  }
+
+  updateSelectedTodo(updates: TodoUpdateRequest): void {
+    const selectedTodo = this.selectedTodoSubject.value;
+    if (selectedTodo) {
+      this.updateTodo(selectedTodo.id, updates);
+      // Update the selected todo with the new data
+      this.selectedTodoSubject.next({ ...selectedTodo, ...updates });
+    }
+  }
 }

@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, map, switchMap, of } from 'rxjs';
+import { Router } from '@angular/router';
+import { Observable, Subscription } from 'rxjs';
 import { Todo, TodoCreateRequest, TodoUpdateRequest } from '../../models/todo.model';
 import { TodoService } from '../../services/todo.service';
 
@@ -12,10 +12,12 @@ import { TodoService } from '../../services/todo.service';
   templateUrl: './todo-detail.html',
   styleUrl: './todo-detail.css'
 })
-export class TodoDetailComponent implements OnInit {
+export class TodoDetailComponent implements OnInit, OnDestroy {
   todo$: Observable<Todo | null>;
+  currentTodo: Todo | null = null;
   isNewTodo = false;
   isEditing = false;
+  private subscription = new Subscription();
   
   editForm = {
     title: '',
@@ -24,7 +26,6 @@ export class TodoDetailComponent implements OnInit {
   };
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private todoService: TodoService
   ) {
@@ -32,20 +33,27 @@ export class TodoDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.todo$.subscribe(todo => {
-      if (todo && !this.isEditing) {
-        this.isNewTodo = false;
-        this.editForm = {
-          title: todo.title,
-          description: todo.description,
-          status: todo.status
-        };
-      } else if (!todo) {
-        this.isNewTodo = true;
-        this.isEditing = true;
-        this.editForm = { title: '', description: '', status: 'open' };
-      }
-    });
+    this.subscription.add(
+      this.todo$.subscribe(todo => {
+        this.currentTodo = todo;
+        if (todo && !this.isEditing) {
+          this.isNewTodo = false;
+          this.editForm = {
+            title: todo.title,
+            description: todo.description,
+            status: todo.status
+          };
+        } else if (!todo) {
+          this.isNewTodo = true;
+          this.isEditing = true;
+          this.editForm = { title: '', description: '', status: 'open' };
+        }
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
   startEditing(): void {
@@ -56,16 +64,13 @@ export class TodoDetailComponent implements OnInit {
     this.isEditing = false;
     if (this.isNewTodo) {
       this.goBack();
+    } else if (this.currentTodo) {
+      this.editForm = {
+        title: this.currentTodo.title,
+        description: this.currentTodo.description,
+        status: this.currentTodo.status
+      };
     }
-    this.todo$.subscribe(todo => {
-      if (todo) {
-        this.editForm = {
-          title: todo.title,
-          description: todo.description,
-          status: todo.status
-        };
-      }
-    });
   }
 
   saveTodo(): void {
@@ -79,27 +84,23 @@ export class TodoDetailComponent implements OnInit {
         this.goBack();
       }
     } else {
-      this.todo$.subscribe(todo => {
-        if (todo && this.editForm.title.trim() && this.editForm.description.trim()) {
-          const updateRequest: TodoUpdateRequest = {
-            title: this.editForm.title.trim(),
-            description: this.editForm.description.trim(),
-            status: this.editForm.status
-          };
-          this.todoService.updateTodo(todo.id, updateRequest);
-          this.isEditing = false;
-        }
-      }).unsubscribe();
+      if (this.editForm.title.trim() && this.editForm.description.trim()) {
+        const updateRequest: TodoUpdateRequest = {
+          title: this.editForm.title.trim(),
+          description: this.editForm.description.trim(),
+          status: this.editForm.status
+        };
+        this.todoService.updateSelectedTodo(updateRequest);
+        this.isEditing = false;
+      }
     }
   }
 
   deleteTodo(): void {
-    this.todo$.subscribe(todo => {
-      if (todo && !this.isNewTodo) {
-        this.todoService.deleteTodo(todo.id);
-        this.goBack();
-      }
-    }).unsubscribe();
+    if (!this.isNewTodo) {
+      this.todoService.deleteSelectedTodo();
+      this.goBack();
+    }
   }
 
   goBack(): void {

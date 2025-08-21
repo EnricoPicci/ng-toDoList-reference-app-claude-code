@@ -24,7 +24,8 @@ export class TodoListComponent implements OnInit {
   ngOnInit(): void {}
 
   onTodoClick(todo: Todo): void {
-    this.router.navigate(['/todo', todo.id]);
+    this.todoService.selectTodo(todo);
+    this.router.navigate(['/todo']);
   }
 
   onToggleStatus(todo: Todo, event: Event): void {
@@ -38,7 +39,8 @@ export class TodoListComponent implements OnInit {
   }
 
   onAddNewTodo(): void {
-    this.router.navigate(['/todo', 'new']);
+    this.todoService.clearSelectedTodo();
+    this.router.navigate(['/todo']);
   }
 
   getStatusClass(status: string): string {

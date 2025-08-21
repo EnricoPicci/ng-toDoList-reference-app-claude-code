@@ -7,9 +7,11 @@ import { Todo, TodoCreateRequest, TodoUpdateRequest } from '../models/todo.model
 })
 export class TodoService {
   private todosSubject = new BehaviorSubject<Todo[]>([]);
+  private selectedTodoSubject = new BehaviorSubject<Todo | null>(null);
   private nextId = 1;
 
   public readonly todos$ = this.todosSubject.asObservable();
+  public readonly selectedTodo$ = this.selectedTodoSubject.asObservable();
   
   public readonly activeTodos$ = this.todos$.pipe(
     map(todos => todos.filter(todo => todo.status !== 'deleted'))
@@ -79,5 +81,13 @@ export class TodoService {
       const newStatus = todo.status === 'open' ? 'done' : 'open';
       this.updateTodo(id, { status: newStatus });
     }
+  }
+
+  selectTodo(todo: Todo): void {
+    this.selectedTodoSubject.next(todo);
+  }
+
+  clearSelectedTodo(): void {
+    this.selectedTodoSubject.next(null);
   }
 }

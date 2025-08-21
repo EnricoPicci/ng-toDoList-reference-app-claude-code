@@ -13,7 +13,7 @@ import { TodoService } from '../../services/todo.service';
   styleUrl: './todo-detail.css'
 })
 export class TodoDetailComponent implements OnInit {
-  todo$: Observable<Todo | undefined>;
+  todo$: Observable<Todo | null>;
   isNewTodo = false;
   isEditing = false;
   
@@ -28,33 +28,22 @@ export class TodoDetailComponent implements OnInit {
     private router: Router,
     private todoService: TodoService
   ) {
-    this.todo$ = of(undefined);
+    this.todo$ = this.todoService.selectedTodo$;
   }
 
   ngOnInit(): void {
-    this.todo$ = this.route.paramMap.pipe(
-      switchMap(params => {
-        const id = params.get('id');
-        if (id === 'new') {
-          this.isNewTodo = true;
-          this.isEditing = true;
-          this.editForm = { title: '', description: '', status: 'open' };
-          return of(undefined);
-        } else if (id) {
-          this.isNewTodo = false;
-          return this.todoService.getTodoById(id);
-        }
-        return of(undefined);
-      })
-    );
-
     this.todo$.subscribe(todo => {
       if (todo && !this.isEditing) {
+        this.isNewTodo = false;
         this.editForm = {
           title: todo.title,
           description: todo.description,
           status: todo.status
         };
+      } else if (!todo) {
+        this.isNewTodo = true;
+        this.isEditing = true;
+        this.editForm = { title: '', description: '', status: 'open' };
       }
     });
   }
@@ -90,28 +79,31 @@ export class TodoDetailComponent implements OnInit {
         this.goBack();
       }
     } else {
-      const id = this.route.snapshot.paramMap.get('id');
-      if (id && this.editForm.title.trim() && this.editForm.description.trim()) {
-        const updateRequest: TodoUpdateRequest = {
-          title: this.editForm.title.trim(),
-          description: this.editForm.description.trim(),
-          status: this.editForm.status
-        };
-        this.todoService.updateTodo(id, updateRequest);
-        this.isEditing = false;
-      }
+      this.todo$.subscribe(todo => {
+        if (todo && this.editForm.title.trim() && this.editForm.description.trim()) {
+          const updateRequest: TodoUpdateRequest = {
+            title: this.editForm.title.trim(),
+            description: this.editForm.description.trim(),
+            status: this.editForm.status
+          };
+          this.todoService.updateTodo(todo.id, updateRequest);
+          this.isEditing = false;
+        }
+      }).unsubscribe();
     }
   }
 
   deleteTodo(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id && !this.isNewTodo) {
-      this.todoService.deleteTodo(id);
-      this.goBack();
-    }
+    this.todo$.subscribe(todo => {
+      if (todo && !this.isNewTodo) {
+        this.todoService.deleteTodo(todo.id);
+        this.goBack();
+      }
+    }).unsubscribe();
   }
 
   goBack(): void {
+    this.todoService.clearSelectedTodo();
     this.router.navigate(['/']);
   }
 

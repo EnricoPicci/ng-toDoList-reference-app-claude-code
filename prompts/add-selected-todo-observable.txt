@@ -1,0 +1,12 @@
+In the current version of the app, the click on an item in the list shown in the TodoListComponent causes the router to navigate to the TodoDetailComponent using the method
+```
+  onTodoClick(todo: Todo): void {
+    this.router.navigate(['/todo', todo.id]);
+  }
+  ```
+
+  Change this implementation to make the navigation to the  TodoDetailComponent view reactive.
+  This means that:
+  - when the user clicks on an item in the list, the service notifies an event with the new "selected item" as data
+  - the router routes to the TodoDetailComponent view without passing any data
+  - the TodoDetailComponent view subscribes to the Observable stream that notifies the current selected item, gets the data notified and shows the selected to-do

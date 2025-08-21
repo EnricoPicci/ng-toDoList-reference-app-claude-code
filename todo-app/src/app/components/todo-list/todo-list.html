@@ -4,17 +4,20 @@
     <button class="add-button" (click)="onAddNewTodo()">Add New Todo</button>
   </div>
 
-  <div class="todo-list" *ngIf="todos$ | async as todos">
-    <div *ngIf="todos.length === 0" class="empty-message">
-      No todos found. Create your first todo!
-    </div>
-    
-    <div 
-      *ngFor="let todo of todos" 
-      class="todo-item"
-      [class]="getStatusClass(todo.status)"
-      (click)="onTodoClick(todo)"
-    >
+  @if (todos$ | async; as todos) {
+    <div class="todo-list">
+      @if (todos.length === 0) {
+        <div class="empty-message">
+          No todos found. Create your first todo!
+        </div>
+      }
+      
+      @for (todo of todos; track todo.id) {
+        <div 
+          class="todo-item"
+          [class]="getStatusClass(todo.status)"
+          (click)="onTodoClick(todo)"
+        >
       <div class="todo-content">
         <h3 class="todo-title">{{ todo.title }}</h3>
         <p class="todo-date">Created: {{ todo.creationDate | date:'short' }}</p>
@@ -39,6 +42,8 @@
           Delete
         </button>
       </div>
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>

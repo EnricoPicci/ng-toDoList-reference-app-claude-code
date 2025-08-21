@@ -1,0 +1,1 @@
+in the html templates of the components there are deprecated expressions like *ngIf and *ngFor. Substitute them with the correct expressions

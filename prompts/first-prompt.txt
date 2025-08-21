@@ -1,0 +1,28 @@
+Build a simple Angular application to manage a “to-do” list.
+A “to-do” has the following properties:
+- Title
+- Description
+- Creation date
+- Status (Status can be “open” or “done” or “deleted”)
+
+The application must allow users to:
+- Create a new “to-do”
+- Change the “Description” and “Title” property of a “to-do” 
+- Delete a “to-do” (if a “to-do” is deleted its status is set to “deleted”)
+
+The app is an Angular app using the most recent version of Angular and all the best practices of a modern Angular app.
+In particular follow these guidelines:
+- The app is a single page app which uses the Angular router to change views
+- There is a view that shows the list of all the “to-do”s which are not deleted. Each item in the list shows the Title, the Creation date and the status of the “to-do”
+- There is a view that shows the details of a “to-do”
+- The app starts showing the list of the “to-do”s
+- If the user clicks on the Title of an item in the list, then the router routes to the Details view which shows all the details of the selected “to-do”
+
+All state information is held in an Angular “Service” instance which is injected via Angular Dependency Injection mechanism.
+The “Service” class exposes methods that trigger actions like “add”, “update” and “delete” a “to-do”
+The “Service” class exposes Observable streams that notify all changes in the state.
+The views subscribe to the Observable streams which are relevant for them and use the notifications to update the view.
+The view Components do not hold any state.
+
+The list of the “to-do”s is held in the “Service” class as part of the state.
+There is no Database or permanent storage involved in the app.

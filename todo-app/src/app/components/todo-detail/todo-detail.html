@@ -1,0 +1,137 @@
+<div class="todo-detail-container">
+  <div class="header">
+    <button class="back-button" (click)="goBack()">← Back to List</button>
+    <h1>{{ isNewTodo ? 'New Todo' : 'Todo Details' }}</h1>
+  </div>
+
+  <div *ngIf="todo$ | async as todo; else newTodoTemplate" class="todo-content">
+    <!-- View Mode -->
+    <div *ngIf="!isEditing" class="view-mode">
+      <div class="todo-info">
+        <h2>{{ todo.title }}</h2>
+        <p class="description">{{ todo.description }}</p>
+        <div class="metadata">
+          <p><strong>Created:</strong> {{ todo.creationDate | date:'full' }}</p>
+          <p><strong>Status:</strong> <span [class]="'status-' + todo.status">{{ todo.status | titlecase }}</span></p>
+        </div>
+      </div>
+      
+      <div class="actions">
+        <button class="edit-button" (click)="startEditing()">Edit Todo</button>
+        <button class="delete-button" (click)="deleteTodo()">Delete Todo</button>
+      </div>
+    </div>
+
+    <!-- Edit Mode -->
+    <div *ngIf="isEditing" class="edit-mode">
+      <form (ngSubmit)="saveTodo()" #todoForm="ngForm">
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input 
+            type="text" 
+            id="title" 
+            name="title"
+            [(ngModel)]="editForm.title" 
+            required
+            maxlength="100"
+            #titleInput="ngModel"
+          >
+          <div *ngIf="titleInput.invalid && titleInput.touched" class="error-message">
+            Title is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea 
+            id="description" 
+            name="description"
+            [(ngModel)]="editForm.description" 
+            required
+            maxlength="500"
+            rows="4"
+            #descriptionInput="ngModel"
+          ></textarea>
+          <div *ngIf="descriptionInput.invalid && descriptionInput.touched" class="error-message">
+            Description is required
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="!isNewTodo">
+          <label for="status">Status:</label>
+          <select id="status" name="status" [(ngModel)]="editForm.status">
+            <option value="open">Open</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="save-button"
+            [disabled]="!isFormValid()"
+          >
+            {{ isNewTodo ? 'Create Todo' : 'Save Changes' }}
+          </button>
+          <button type="button" class="cancel-button" (click)="cancelEditing()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Todo Template -->
+  <ng-template #newTodoTemplate>
+    <div class="edit-mode">
+      <form (ngSubmit)="saveTodo()" #todoForm="ngForm">
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input 
+            type="text" 
+            id="title" 
+            name="title"
+            [(ngModel)]="editForm.title" 
+            required
+            maxlength="100"
+            #titleInput="ngModel"
+            placeholder="Enter todo title..."
+          >
+          <div *ngIf="titleInput.invalid && titleInput.touched" class="error-message">
+            Title is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea 
+            id="description" 
+            name="description"
+            [(ngModel)]="editForm.description" 
+            required
+            maxlength="500"
+            rows="4"
+            #descriptionInput="ngModel"
+            placeholder="Enter todo description..."
+          ></textarea>
+          <div *ngIf="descriptionInput.invalid && descriptionInput.touched" class="error-message">
+            Description is required
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="save-button"
+            [disabled]="!isFormValid()"
+          >
+            Create Todo
+          </button>
+          <button type="button" class="cancel-button" (click)="cancelEditing()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+</div>
